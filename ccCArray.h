@@ -230,6 +230,11 @@ static inline void ccArrayMakeObjectsPerformSelectorWithObject(ccArray *arr, SEL
 }
 
 
+// Fast iteration, easy integration	
+#define CCARRAY_FOREACH(object, array)																	\
+object=array->arr[0]; for(int i = 0, num = array ? array->num : 0; i<num; i++, object = array->arr[i])	\
+
+
 #pragma mark -
 #pragma mark ccCArray for Values (c structures)
 
