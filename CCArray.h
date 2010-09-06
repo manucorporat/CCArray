@@ -26,13 +26,33 @@
 #import "ccCArray.h"
 
 
-/*
- Fast
+/** A faster alternative of NSArray.
+ CCArray uses internally a c-array.
  @since v0.99.4
  */
-@interface CCArray : NSObject <NSFastEnumeration, NSCoding>
+
+
+/** @def CCARRAY_FOREACH
+ A convience macro to iterate over a CCArray using. It is faster than the "fast enumeration" interface.
+ @since v0.99.4
+ */
+typedef struct pccArrayForeach_ //p =private
 {
-	@public ccArray *data;
+	NSUInteger num;
+	id *arr;
+} pccArrayForeach;
+
+// Fast iteration, easy integration	
+#define CCARRAY_FOREACH(__array__, __object__)							\
+if(__array__ && (__object__=__array__->data->arr[0]))					\
+for(pccArrayForeach _d = {__array__->data->num, __array__->data->arr+1}; _d.num > 0; _d.num--, __object__=*_d.arr++)
+
+
+
+
+@interface CCArray : NSObject <NSFastEnumeration, NSCoding, NSCopying>
+{
+@public ccArray *data;
 }
 
 + (id) array;
@@ -52,6 +72,7 @@
 - (id) objectAtIndex:(NSUInteger)index;
 - (id) lastObject;
 - (BOOL) containsObject:(id)object;
+- (id) randomObject;
 
 #pragma mark Adding Objects
 
@@ -74,7 +95,5 @@
 - (void) makeObjectsPerformSelector:(SEL)aSelector withObject:(id)object;
 
 - (NSArray*) getNSArray;
-
-
 
 @end

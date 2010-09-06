@@ -24,6 +24,7 @@
 
 #import "CCArray.h"
 
+#define RANDOM_0_1() ((random() / (float)0x7fffffff ))
 
 @implementation CCArray
 
@@ -111,10 +112,10 @@
 
 - (id) objectAtIndex:(NSUInteger)index
 {
-	if( index > data->num )
+	if( index >= data->num )
 		[NSException raise:NSRangeException
 					format: @"index out of range in objectAtIndex(%d)", data->num ];
-
+	
 	return data->arr[index];
 }
 
@@ -128,6 +129,12 @@
 - (BOOL) containsObject:(id)object
 {
 	return ccArrayContainsObject(data, object);
+}
+
+- (id) randomObject
+{
+	if(data->num==0) return nil;
+	return data->arr[(int)(data->num*RANDOM_0_1())];
 }
 
 #pragma mark Adding Objects
@@ -159,7 +166,10 @@
 
 - (void) removeLastObject
 {
-	ccArrayRemoveObjectAtIndex(data, data->num);
+	if( data->num == 0 )
+		[NSException raise:NSRangeException
+					format: @"no objects added"];
+	ccArrayRemoveObjectAtIndex(data, data->num-1);
 }
 
 - (void) removeObject:(id)object
@@ -202,19 +212,15 @@
 	ccArrayMakeObjectsPerformSelectorWithObject(data, aSelector, object);
 }
 
-- (NSArray*) getNSArray{
-	NSMutableArray *nsarray = [NSMutableArray arrayWithCapacity:data->num];
-	int nu = data->num;
-	for(int i = 0; i<nu; i++)
-		[nsarray addObject:data->arr[i]];
-
-	return nsarray;
+- (NSArray*) getNSArray
+{
+	return [NSArray arrayWithObjects:data->arr count:data->num];
 }
 
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id *)stackbuf count:(NSUInteger)len
 {
 	if(state->state == 1) return 0;
-
+	
 	state->mutationsPtr = (unsigned long *)self;
 	state->itemsPtr = &data->arr[0];
 	state->state = 1;
@@ -227,5 +233,13 @@
 	[super dealloc];
 }
 
+#pragma mark CCArray - NSCopying protocol
+
+- (id)copyWithZone:(NSZone *)zone
+{
+	NSArray *nsArray = [self getNSArray];
+	CCArray *newArray = [[[self class] allocWithZone:zone] initWithNSArray:nsArray];
+	return newArray;
+}
 
 @end

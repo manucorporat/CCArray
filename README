@@ -1,0 +1,45 @@
+CCArray
+A easy and faster Objective-C array.
+
+/***CREATE A CCArray ****/
+CCArray *array = [CCArray arrayWithCapacity:10];
+
+
+
+/*** ADD OBJECTS****/
+[array addObject:YOUR_OBJECT];
+//or
+[array insertObject:YOUR_OBJECT atIndex:0];
+
+
+//*** READ THE ARRAY  ****/
+
+/** NSFastEnumeration  (slow way) **/
+for(id object in array)
+{
+	[object doSomething];
+}
+
+
+
+
+/** Ultra fast way **/
+
+id object;
+CCARRAY_FOREACH(array, object)
+{
+	[object doSomething];
+}
+
+
+
+
+/** manual way to read the array **/
+
+ccArray *arrayData = array->data;
+for(int i=0; i<arrayData->num; i++)
+{
+	id object = arrayData->arr[i];
+	[object doSomething];
+}
+

@@ -47,6 +47,11 @@
 #pragma mark -
 #pragma mark ccArray for Objects
 
+// Easy integration	
+#define CCARRAYDATA_FOREACH(__array__, __object__)															\
+__object__=__array__->arr[0]; for(int i=0, num=__array__->num; i<num; i++, __object__=__array__->arr[i])	\
+
+
 typedef struct ccArray {
 	NSUInteger num, max;
 	id *arr;
@@ -56,12 +61,12 @@ typedef struct ccArray {
 static inline ccArray* ccArrayNew(NSUInteger capacity) {
 	if (capacity == 0)
 		capacity = 1; 
-
+	
 	ccArray *arr = (ccArray*)malloc( sizeof(ccArray) );
 	arr->num = 0;
 	arr->arr =  (id*) malloc( capacity * sizeof(id) );
 	arr->max = capacity;
-
+	
 	return arr;
 }
 
@@ -71,9 +76,9 @@ static inline void ccArrayRemoveAllObjects(ccArray *arr);
 static inline void ccArrayFree(ccArray *arr)
 {
 	if( arr == nil ) return;
-
+	
 	ccArrayRemoveAllObjects(arr);
-
+	
 	free(arr->arr);
 	free(arr);
 }
@@ -138,12 +143,12 @@ static inline void ccArrayAppendArrayWithResize(ccArray *arr, ccArray *plusArr)
 static inline void ccArrayInsertObjectAtIndex(ccArray *arr, id object, NSUInteger index)
 {
 	NSCAssert(index<=arr->num, @"Invalid index. Out of bounds");
-
+	
 	ccArrayEnsureExtraCapacity(arr, 1);
-
+	
 	for( NSUInteger i = arr->num; index < i; i--)
 		arr->arr[i] = arr->arr[i - 1];
-
+	
 	arr->arr[index] = [object retain];
 	arr->num++;
 }
@@ -160,7 +165,7 @@ static inline void ccArrayRemoveAllObjects(ccArray *arr)
 static inline void ccArrayRemoveObjectAtIndex(ccArray *arr, NSUInteger index)
 {
 	[arr->arr[index] release];
-
+	
 	for( NSUInteger last = --arr->num; index < last; index++)
 		arr->arr[index] = arr->arr[index + 1];
 }
@@ -204,7 +209,7 @@ static inline void ccArrayRemoveArray(ccArray *arr, ccArray *minusArr)
 static inline void ccArrayFullRemoveArray(ccArray *arr, ccArray *minusArr)
 {
 	NSUInteger back = 0;
-
+	
 	for( NSUInteger i = 0; i < arr->num; i++) {
 		if( ccArrayContainsObject(minusArr, arr->arr[i]) ) {
 			[arr->arr[i] release];
@@ -212,7 +217,7 @@ static inline void ccArrayFullRemoveArray(ccArray *arr, ccArray *minusArr)
 		} else
 			arr->arr[i - back] = arr->arr[i];
 	}
-
+	
 	arr->num -= back;
 }
 
@@ -230,11 +235,6 @@ static inline void ccArrayMakeObjectsPerformSelectorWithObject(ccArray *arr, SEL
 }
 
 
-// Fast iteration, easy integration	
-#define CCARRAY_FOREACH(object, array)																	\
-object=array->arr[0]; for(int i = 0, num = array ? array->num : 0; i<num; i++, object = array->arr[i])	\
-
-
 #pragma mark -
 #pragma mark ccCArray for Values (c structures)
 
@@ -246,12 +246,12 @@ static inline void ccCArrayRemoveAllValues(ccCArray *arr);
 static inline ccCArray* ccCArrayNew(NSUInteger capacity) {
 	if (capacity == 0)
 		capacity = 1; 
-
+	
 	ccCArray *arr = (ccCArray*)malloc( sizeof(ccCArray) );
 	arr->num = 0;
 	arr->arr =  (id*) malloc( capacity * sizeof(id) );
 	arr->max = capacity;
-
+	
 	return arr;
 }
 
@@ -259,9 +259,9 @@ static inline ccCArray* ccCArrayNew(NSUInteger capacity) {
 static inline void ccCArrayFree(ccCArray *arr)
 {
 	if( arr == nil ) return;
-
+	
 	ccCArrayRemoveAllValues(arr);
-
+	
 	free(arr->arr);
 	free(arr);
 }
@@ -296,15 +296,15 @@ static inline BOOL ccCArrayContainsValue(ccCArray *arr, void* value)
 static inline void ccCArrayInsertValueAtIndex( ccCArray *arr, void *value, NSUInteger index)
 {
 	assert( index < arr->max );
-
+	
 	int remaining = arr->num - index;
-
+	
 	// last Value doesn't need to be moved
 	if( remaining > 0) {
 		// tex coordinates
 		memmove( &arr->arr[index+1],&arr->arr[index], sizeof(void*) * remaining );
 	}
-
+	
 	arr->num++;	
 	arr->arr[index] = (id) value;
 }
@@ -317,7 +317,7 @@ static inline void ccCArrayAppendValue(ccCArray *arr, void* value)
 }
 
 /** Appends an value. Capacity of arr is increased if needed. */
-static inline void ccCArrayAppendValueWithResize(ccCArray *arr, id value)
+static inline void ccCArrayAppendValueWithResize(ccCArray *arr, void* value)
 {
 	ccCArrayEnsureExtraCapacity(arr, 1);
 	ccCArrayAppendValue(arr, value);
@@ -390,14 +390,14 @@ static inline void ccCArrayRemoveArray(ccCArray *arr, ccCArray *minusArr)
 static inline void ccCArrayFullRemoveArray(ccCArray *arr, ccCArray *minusArr)
 {
 	NSUInteger back = 0;
-
+	
 	for( NSUInteger i = 0; i < arr->num; i++) {
 		if( ccCArrayContainsValue(minusArr, arr->arr[i]) ) {
 			back++;
 		} else
 			arr->arr[i - back] = arr->arr[i];
 	}
-
+	
 	arr->num -= back;
 }
 #endif // CC_ARRAY_H
