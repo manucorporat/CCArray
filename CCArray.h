@@ -43,9 +43,11 @@ typedef struct pccArrayForeach_ //p =private
 } pccArrayForeach;
 
 // Fast iteration, easy integration	
-#define CCARRAY_FOREACH(__array__, __object__)							\
-if(__array__ && (__object__=__array__->data->arr[0]))					\
-for(pccArrayForeach _d = {__array__->data->num, __array__->data->arr+1}; _d.num > 0; _d.num--, __object__=*_d.arr++)
+#define CCARRAY_FOREACH(__array__, __object__)                          \
+if(__array__)                                                           \
+for(pccArrayForeach _d = {__array__->data->num, __array__->data->arr};  \
+    _d.num > 0 && ((__object__ = *_d.arr) != NULL || true);             \
+    _d.num--, _d.arr++)
 
 
 
